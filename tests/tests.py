@@ -1,15 +1,35 @@
 """Module to run tests."""
 
 import pytest
-from page_loader.core import hello_world
+import tempfile
+import os
+
+from page_loader.loader import get_local_name, download
 
 
-@pytest.mark.parametrize("a, b, c",
-                         [(1, 2, 3),
-                          (3, 10, 13)])
-def test_sum(a, b, c):
-    assert a + b == c
+URL_1_1 = "https://ru.hexlet.io/courses"
+URL_1_2 = "http://ru.hexlet.io/courses"
+URL_2 = "https://ru.hexlet.io/projects/51/members/14466?step=1"
+
+PATH_1 = "/var/tmp"
+PATH_2 = os.getcwd()
+
+RESULT_1 = "ru-hexlet-io-courses.html"
+RESULT_2 = "ru-hexlet-io-projects-51-members-14466?step-1.html"
 
 
-def test_core():
-    assert hello_world() == "Hello, World!"
+@pytest.mark.parametrize("url, result",
+                         [(URL_1_1, RESULT_1),
+                          (URL_1_2, RESULT_1),
+                          (URL_2, RESULT_2)])
+def test_get_filename(url, result):
+    assert get_local_name(url) == result
+
+
+@pytest.mark.parametrize("url, result",
+                         [(URL_1_1, RESULT_1),
+                          (URL_2, RESULT_2)])
+def test_download(url, result):
+    with tempfile.TemporaryDirectory(dir="tests/fixtures") as temp_dir:
+        assert download(url, temp_dir) == f"/{temp_dir}/{result}"
+        assert os.path.isfile(f"{temp_dir}/{result}") is True

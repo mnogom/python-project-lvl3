@@ -2,11 +2,13 @@
 
 """Entry point."""
 
-from page_loader.core import hello_world
+from page_loader.loader import download
+from page_loader.cli import parse_args
 
 
 def main():
-    print(hello_world())
+    url, path = parse_args()
+    download(url, path)
 
 
 if __name__ == '__main__':
