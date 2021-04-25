@@ -11,18 +11,12 @@ from page_loader.file_manager import create_directory, save_file
 from page_loader.request_manager import get_response
 
 
-logging.basicConfig(level=logging.INFO,
-                    format=("%(asctime)s - "
-                            "[%(levelname)s] -  "
-                            "%(name)s - "
-                            "(%(filename)s)."
-                            "%(funcName)s"
-                            "(%(lineno)d) - %(message)s"))
-
-
-def get_local_name(url: str, ext="") -> str:
+def get_local_name(url: str, ext: str) -> str:
     if url.endswith("/"):
         url = url[:-1]
+    if not ext:
+        ext = ".html"
+
     parsed_url = urlparse(url)
     filename = "{}{}{}".format(
         parsed_url.netloc,
@@ -55,7 +49,8 @@ def is_local_resource(item_url: str, page_url: str) -> bool:
 
 def download_local_resources(page_url: str,
                              page_html: str,
-                             ref_dir: str):
+                             abs_ref_dir: str,
+                             rel_ref_dir: str):
 
     logging.info("Starting analyzing page resources")
 
@@ -83,9 +78,9 @@ def download_local_resources(page_url: str,
                 local_name = get_local_name(cut_item_url, ext)
 
                 response = get_response(full_item_url)
-                save_file(f"{ref_dir}/{local_name}", "wb", response.content)
+                save_file(f"{abs_ref_dir}{local_name}", "wb", response.content)
 
-                item[attr] = f"{ref_dir}/{local_name}"
+                item[attr] = f"{rel_ref_dir}{local_name}"
                 logging.info(f"Switch resource reference "
                              f"from '{item_url}' to '{item[attr]}'")
 
@@ -100,11 +95,12 @@ def download(url: str, path: str) -> str:
     response = get_response(url)
 
     page_name = get_local_name(url, ".html")
-    reference_dir = create_directory(path, get_local_name(url, "_files"))
+    rel_ref_dir = get_local_name(url, '_files/')
+    abs_ref_dir = create_directory(f"{path}{rel_ref_dir}")
 
     page_text = download_local_resources(url,
                                          response.text,
-                                         reference_dir)
-
-    print(path, page_name)
-    return save_file(f"{path}{page_name}", "w", page_text)
+                                         abs_ref_dir,
+                                         rel_ref_dir)
+    # TODO: WTF?!
+    return save_file(f"{path}{page_name}", "w", page_text.replace("/>", ">"))

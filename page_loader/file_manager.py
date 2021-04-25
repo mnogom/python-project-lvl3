@@ -5,31 +5,33 @@ import os
 # import sys
 
 
-def create_directory(path: str, dir_name: str) -> str:
-    logging.info(f"Creating '{path}{dir_name}'")
+def create_directory(path: str) -> str:
+    logging.info(f"Creating '{path}'")
+
     try:
-        os.mkdir(f"{path}{dir_name}")
+        os.mkdir(f"{path}")
 
     except FileExistsError:
-        logging.info(f"{path}{dir_name} already exists.")
+        logging.info(f"{path} already exists.")
 
     except Exception as error:
         logging.warning(error)
-        # sys.exit()
+        raise error
 
-    logging.info(f"{path}{dir_name} was created")
-    return f"{path}{dir_name}"
+    logging.info(f"{path} was created")
+    return f"{path}"
 
 
 def save_file(filename, mode, file_data) -> str:
     logging.info(f"Starting to save '{filename}'")
+
     try:
         with open(filename, mode) as file:
             file.write(file_data)
 
     except Exception as error:
         logging.warning(error)
-        # sys.exit()
+        raise error
 
     logging.info(f"File '{filename}' was saved with mode '{mode}'")
     return filename
