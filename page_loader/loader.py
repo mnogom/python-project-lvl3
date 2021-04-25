@@ -104,4 +104,5 @@ def download(url: str, path: str) -> str:
                                          response.text,
                                          reference_dir)
 
+    print(path, page_name)
     return save_file(f"{path}{page_name}", "w", page_text)

@@ -21,7 +21,7 @@ RESULT_2 = "ru-hexlet-io-projects-51-members-14466?step=1&item=2.html"
                          [(URL_1, RESULT_1),
                           (URL_2, RESULT_2)])
 def test_download(url, result):
-    with tempfile.TemporaryDirectory(dir="tests/fixtures") as temp_dir:
-        assert download(url, temp_dir) == f"{temp_dir}/{result}"
+    with tempfile.TemporaryDirectory(dir="tests/fixtures/") as temp_dir:
+        assert download(url, f"{temp_dir}/") == f"{temp_dir}/{result}"
         assert os.path.isfile(f"{temp_dir}/{result}") is True
         assert os.path.isdir(f"{temp_dir}/{result.replace('.html', '_files')}")

@@ -1,7 +1,7 @@
 """Request manager."""
 
 import logging
-import sys
+# import sys
 
 import requests
 
@@ -23,10 +23,10 @@ def get_response(url: str):
         logging.warning(f"Bad request. Got error "
                         f"{response.status_code}: "
                         f"{response.reason}")
-        sys.exit()
+        # sys.exit()
 
     if response.status_code // 100 == 5:
         logging.warning(f"Bad answer. Got error "
                         f"{response.status_code}: "
                         f"{response.reason}")
-        sys.exit()
+        # sys.exit()
