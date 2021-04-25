@@ -4,7 +4,7 @@ import pytest
 import tempfile
 import os
 
-from page_loader.loader import get_local_name, download
+from page_loader.loader import download
 
 
 URL_1 = "https://ru.hexlet.io/courses"
