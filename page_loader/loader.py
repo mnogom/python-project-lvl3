@@ -1,17 +1,16 @@
 """Loader."""
-import sys
 
-import requests
 import os
 import re
-from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin
 import logging
 
+from bs4 import BeautifulSoup
 
-# logging.basicConfig(filename='example.log',
-#                     encoding='utf-8',
-#                     level=logging.INFO)
+from page_loader.file_manager import create_directory, save_file
+from page_loader.request_manager import get_response
+
+
 logging.basicConfig(level=logging.INFO,
                     format=("%(asctime)s - "
                             "[%(levelname)s] -  "
@@ -19,32 +18,6 @@ logging.basicConfig(level=logging.INFO,
                             "(%(filename)s)."
                             "%(funcName)s"
                             "(%(lineno)d) - %(message)s"))
-
-
-def get_response(url: str):
-    response = requests.get(url)
-
-    if response.status_code // 100 == 2:
-        logging.info(f"Response status code is {response.status_code}")
-        return response
-
-    if response.status_code // 100 == 3:
-        logging.info(f"Your request was "
-                     f"redirected with code "
-                     f"{response.status_code}")
-        return response
-
-    if response.status_code // 100 == 4:
-        logging.warning(f"Bad request. Got error "
-                        f"{response.status_code}: "
-                        f"{response.reason}")
-        sys.exit()
-
-    if response.status_code // 100 == 5:
-        logging.warning(f"Bad answer. Got error "
-                        f"{response.status_code}: "
-                        f"{response.reason}")
-        sys.exit()
 
 
 def get_local_name(url: str, ext="") -> str:
@@ -66,24 +39,23 @@ def is_local_resource(item_url: str, page_url: str) -> bool:
     page_url_parsed = urlparse(page_url)
     item_url_parsed = urlparse(item_url)
 
-    is_local = (item_url_parsed.netloc == page_url_parsed.netloc or  # noqa: W504, E501
-                not item_url_parsed.netloc) and \
-        item_url and \
-        not item_url.startswith("data:")
-
     if not item_url:
-        logging.info("Item hasn't reference in attribute.")
-    else:
-        logging.info(f"Item '{item_url}' is "
-                     f"{'local' if is_local else 'not local'}")
-
-    return is_local
+        logging.info("Item hasn't references in attribute")
+        return False
+    if item_url.startswith("data:"):
+        logging.info("Type of item reference is 'Data URL'")
+        return False
+    if not item_url_parsed.netloc or \
+            item_url_parsed.netloc == page_url_parsed.netloc:
+        logging.info(f"Item reference '{item_url}' is local")
+        return True
+    logging.info(f"Item reference '{item_url}' is not local")
+    return False
 
 
 def download_local_resources(page_url: str,
                              page_html: str,
-                             page_dir: str,
-                             path: str):
+                             ref_dir: str):
 
     logging.info("Starting analyzing page resources")
 
@@ -111,11 +83,9 @@ def download_local_resources(page_url: str,
                 local_name = get_local_name(cut_item_url, ext)
 
                 response = get_response(full_item_url)
-                with open(f"{path}{page_dir}/{local_name}", "wb") as file:
-                    file.write(response.content)
-                    logging.info(f"{local_name} was saved to {path}{page_dir}")
+                save_file(f"{ref_dir}/{local_name}", "wb", response.content)
 
-                item[attr] = f"{page_dir}/{local_name}"
+                item[attr] = f"{ref_dir}/{local_name}"
                 logging.info(f"Switch resource reference "
                              f"from '{item_url}' to '{item[attr]}'")
 
@@ -128,20 +98,10 @@ def download(url: str, path: str) -> str:
     response = get_response(url)
 
     page_name = get_local_name(url, ".html")
-    page_dir = get_local_name(url, "_files")
-    try:
-        logging.info(f"Creating directories '{path}{page_dir}'")
-        os.makedirs(f"{path}/{page_dir}")
-    except FileExistsError:
-        logging.info(f"Directories '{path}{page_dir}' is already exists")
+    reference_dir = create_directory(path, get_local_name(url, "_files"))
 
-    page_html = download_local_resources(url,
+    page_text = download_local_resources(url,
                                          response.text,
-                                         page_dir,
-                                         path)
+                                         reference_dir)
 
-    with open(f"{path}/{page_name}", "w") as file:
-        file.write(page_html)
-        logging.info(f"'{page_name}' was saved to {path}")
-
-    return f"{path}/{page_name}"
+    return save_file(f"{path}{page_name}", "w", page_text)
