@@ -95,6 +95,8 @@ def download_local_resources(page_url: str,
 
 
 def download(url: str, path: str) -> str:
+    if not path.endswith("/"):
+        path += "/"
     response = get_response(url)
 
     page_name = get_local_name(url, ".html")
