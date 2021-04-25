@@ -1,5 +1,4 @@
 """Loader."""
-import logging
 
 import requests
 import os
@@ -9,7 +8,19 @@ from urllib.parse import urlparse, urljoin
 import logging
 
 
-logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.INFO)
+# logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
+
+
+def get_response(url: str):
+    response = requests.get(url)
+
+    if response.status_code // 100 == 2:
+        logging.info(f"Response status code is {response.status_code}")
+        return response
+
+    if response.status_code // 100 == 3:
+        logging.info(f"Your request was redirected with code {response.status_code} to ")
 
 
 def get_local_name(url: str, ext="") -> str:
@@ -34,7 +45,10 @@ def is_local_resource(item_url: str, page_url: str) -> bool:
                     not item_url_parsed.netloc) and item_url and \
                     not item_url.startswith("data:")
 
-    logging.info(f"Item '{item_url}' is {'local' if is_local else 'not local'}")
+    if not item_url:
+        logging.info("Item hasn't reference in attribute.")
+    else:
+        logging.info(f"Item '{item_url}' is {'local' if is_local else 'not local'}")
 
     return is_local
 
@@ -43,6 +57,8 @@ def download_local_resources(page_url: str,
                              page_html: str,
                              page_dir: str,
                              path: str):
+
+    logging.info("Starting analyzing page resources")
 
     resources_types = {
         "img": "src",
@@ -56,6 +72,8 @@ def download_local_resources(page_url: str,
         resource_items = soup.find_all(tag)
         for item in resource_items:
 
+            logging.info(f"Analyze '{attr}' in '{tag}'")
+
             item_url = item.get(attr)
 
             if is_local_resource(item_url, page_url):
@@ -66,9 +84,14 @@ def download_local_resources(page_url: str,
                 local_name = get_local_name(cut_item_url, ext)
 
                 response = requests.get(full_item_url)
-                with open(f"{path}/{page_dir}/{local_name}", "wb") as file:
+                with open(f"{path}{page_dir}/{local_name}", "wb") as file:
                     file.write(response.content)
-                    item[attr] = f"{page_dir}/{local_name}"
+                    logging.info(f"{local_name} was saved to {path}{page_dir}")
+
+                item[attr] = f"{page_dir}/{local_name}"
+                logging.info(f"Switch resource reference from '{item_url}' to '{item[attr]}'")
+
+    logging.info(f"End of analyzing page resources")
 
     return soup.prettify()
 
@@ -79,9 +102,10 @@ def download(url: str, path: str) -> str:
     page_name = get_local_name(url, ".html")
     page_dir = get_local_name(url, "_files")
     try:
+        logging.info(f"Creating directories '{path}{page_dir}'")
         os.makedirs(f"{path}/{page_dir}")
     except FileExistsError:
-        pass
+        logging.info(f"Directories '{path}{page_dir}' is already exists")
 
     page_html = download_local_resources(url,
                                          response.text,
@@ -90,5 +114,6 @@ def download(url: str, path: str) -> str:
 
     with open(f"{path}/{page_name}", "w") as file:
         file.write(page_html)
+        logging.info(f"'{page_name}' was saved to {path}")
 
     return f"{path}/{page_name}"
