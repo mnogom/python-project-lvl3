@@ -8,8 +8,9 @@ from page_loader.logger_agent import get_logger
 
 
 def main():
-    get_logger()
-    url, path = parse_args()
+    url, path, debug = parse_args()
+    if debug:
+        get_logger()
     download(url, path)
 
 
