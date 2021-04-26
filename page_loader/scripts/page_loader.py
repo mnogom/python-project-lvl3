@@ -8,9 +8,10 @@ from page_loader.logger_agent import get_logger
 
 
 def main():
-    get_logger()
-    url, path = parse_args()
-    download(url, path)
+    url, path, debug = parse_args()
+    get_logger(debug_mode=debug)
+    final_path = download(url, path)
+    print(f"Page was successfully downloaded into '{final_path}'")
 
 
 if __name__ == '__main__':

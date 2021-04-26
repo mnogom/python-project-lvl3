@@ -4,11 +4,15 @@ import sys
 import logging
 
 
-def get_logger():
+def get_logger(debug_mode):
     """Init logger configuration."""
 
     root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
+
+    if debug_mode:
+        root.setLevel(logging.DEBUG)
+    else:
+        root.setLevel(logging.WARNING)
 
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(logging.DEBUG)
