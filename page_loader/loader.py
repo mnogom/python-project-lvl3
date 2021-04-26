@@ -108,7 +108,7 @@ def download_local_resources(page_url: str,
 
     logging.info("End of analyzing page resources")
 
-    return soup.prettify().replace("/>", ">")
+    return soup.prettify(formatter="html5")
 
 
 def download(url: str, path: str) -> str:
@@ -131,5 +131,5 @@ def download(url: str, path: str) -> str:
                                          response.text,
                                          abs_ref_dir,
                                          rel_ref_dir)
-    # TODO: WTF?!
+
     return save_file(f"{path}{page_name}", "w", page_text)
