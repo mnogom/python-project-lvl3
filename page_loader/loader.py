@@ -11,7 +11,7 @@ from page_loader.file_manager import create_directory, save_file
 from page_loader.request_manager import get_response
 
 
-def get_local_name(url: str, ext: str) -> str:
+def get_local_name(url: str, ext="") -> str:
     """Convert url to local name.
 
     :param url: input url
