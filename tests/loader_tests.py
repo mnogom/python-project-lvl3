@@ -1,27 +1,58 @@
-"""Module to run tests."""
+"""Main features tests."""
 
-import pytest
 import tempfile
 import os
+
+import pytest
+import requests_mock
 
 from page_loader.loader import download
 
 
-URL_1 = "https://ru.hexlet.io/courses"
-URL_2 = "https://ru.hexlet.io/projects/51/members/14466?step=1&item=2"
-
-PATH_1 = "/var/tmp"
-PATH_2 = os.getcwd()
-
-RESULT_1 = "ru-hexlet-io-courses.html"
-RESULT_2 = "ru-hexlet-io-projects-51-members-14466?step=1&item=2.html"
+DEMO_URL = "http://example.ru"
 
 
-@pytest.mark.parametrize("url, result",
-                         [(URL_1, RESULT_1),
-                          (URL_2, RESULT_2)])
-def test_download(url, result):
-    with tempfile.TemporaryDirectory(dir="tests/fixtures/") as temp_dir:
-        assert download(url, f"{temp_dir}/") == f"{temp_dir}/{result}"
-        assert os.path.isfile(f"{temp_dir}/{result}") is True
-        assert os.path.isdir(f"{temp_dir}/{result.replace('.html', '_files')}")
+@pytest.mark.parametrize("status_code",
+                         [404, 503])
+def test_requests_errors(status_code):
+    """Check if raise error with response status codes 4** and 5**."""
+
+    with requests_mock.Mocker() as mock_up:
+        mock_up.get(DEMO_URL, status_code=status_code)
+
+        with pytest.raises(ConnectionError):
+            _ = download(DEMO_URL, os.getcwd())
+
+
+def test_write_permission_error():
+    """Check if raise error with writing to non access directory."""
+
+    sys_dir = list(filter(lambda x: x.lower().startswith("sys"),
+                          os.listdir("/")))[0]
+
+    with requests_mock.Mocker() as mock_up:
+        mock_up.get(DEMO_URL, text="demo")
+
+        with pytest.raises(PermissionError):
+            _ = download(DEMO_URL, f"/{sys_dir}")
+
+
+def test_write_read_only_error():
+    """Check if raise error with writing to non access directory."""
+
+    with requests_mock.Mocker() as mock_up:
+        mock_up.get(DEMO_URL, text="demo")
+
+        with pytest.raises(OSError):
+            _ = download(DEMO_URL, "/")
+
+
+def test_write_to_nonexistent_directory():
+    """Check if raise error with writing to no nonexistent directory"""
+
+    with requests_mock.Mocker() as mock_up:
+        mock_up.get(DEMO_URL, text="demo")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with pytest.raises(FileNotFoundError):
+                _ = download(DEMO_URL, f"{temp_dir}/not/existent/dir")

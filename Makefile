@@ -15,13 +15,14 @@ lint:
 	poetry run flake8 tests
 
 test:
-	poetry run pytest tests/tests.py -vv
+	poetry run pytest tests/components_tests.py -vv
+	poetry run pytest tests/loader_tests.py -vv
 
 coverage:
-	poetry run pytest --cov=page_loader --cov-report xml tests/tests.py
+	poetry run pytest --cov=page_loader --cov-report xml tests/*
 
 local-coverage:
-	poetry run pytest --cov=page_loader tests/tests.py
+	poetry run pytest --cov=page_loader tests/*
 
 page_load_test:
 	poetry run page-loader
