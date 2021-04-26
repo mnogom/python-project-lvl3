@@ -8,7 +8,6 @@ from page_loader.loader import download
 
 DEMO_URL = "http://example.ru"
 RIGHT_HTML_DIR = "tests/fixtures/demo_page/out"
-RIGHT_REF_DIR = "tests/fixtures/demo_page/out/example-ru_files"
 FIXTURE_DIR = "tests/fixtures/demo_page/"
 
 
