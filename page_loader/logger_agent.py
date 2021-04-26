@@ -5,6 +5,9 @@ import logging
 
 
 def get_logger():
+    """Init logger configuration."""
+
+
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
 

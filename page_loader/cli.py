@@ -5,6 +5,11 @@ import os
 
 
 def parse_args():
+    """Parse input parameters.
+
+    :return: file paths and arguments
+    """
+
     parser = argparse.ArgumentParser(description="Page loader")
     parser.add_argument(dest="url", help="URL")
     parser.add_argument("-o", "--output",

@@ -6,6 +6,11 @@ import requests
 
 
 def get_response(url: str):
+    """Get response from server.
+
+    :param url: requested url
+    :return: full response"""
+
     response = requests.get(url)
 
     if response.status_code // 100 == 2:

@@ -12,6 +12,12 @@ from page_loader.request_manager import get_response
 
 
 def get_local_name(url: str, ext: str) -> str:
+    """Convert url to local name.
+
+    :param url: input url
+    :param ext: extension (ending of filename)
+    """
+
     if url.endswith("/"):
         url = url[:-1]
     if not ext:
@@ -30,6 +36,13 @@ def get_local_name(url: str, ext: str) -> str:
 
 
 def is_local_resource(item_url: str, page_url: str) -> bool:
+    """Check if resource is local.
+
+    :param item_url: reference url
+    :param page_url: page url
+    :return: True/False
+    """
+
     page_url_parsed = urlparse(page_url)
     item_url_parsed = urlparse(item_url)
 
@@ -50,7 +63,16 @@ def is_local_resource(item_url: str, page_url: str) -> bool:
 def download_local_resources(page_url: str,
                              page_html: str,
                              abs_ref_dir: str,
-                             rel_ref_dir: str):
+                             rel_ref_dir: str) -> str:
+    """Find and download local resources.
+    Switch references to downloaded files
+
+    :param page_url: page url
+    :param page_html: html page data
+    :param abs_ref_dir: absolute reference path
+    :param rel_ref_dir: relative reference path
+    :return: updated html page data
+    """
 
     logging.info("Starting analyzing page resources")
 
@@ -90,6 +112,14 @@ def download_local_resources(page_url: str,
 
 
 def download(url: str, path: str) -> str:
+    """Download page and all local resources.
+
+    :param url: requested url
+    :param path: path to download
+    :return: path to downloaded page
+    """
+
+
     if not path.endswith("/"):
         path += "/"
     response = get_response(url)
