@@ -15,8 +15,7 @@ lint:
 	poetry run flake8 tests
 
 test:
-	poetry run pytest tests/components_tests.py -vv
-	poetry run pytest tests/loader_tests.py -vv
+	poetry run pytest tests/* -vv
 
 coverage:
 	poetry run pytest --cov=page_loader --cov-report xml tests/*
