@@ -14,7 +14,7 @@ def create_directory(path: str) -> str:
     logging.info(f"Creating '{path}'")
 
     try:
-        os.mkdir(f"{path}")
+        os.mkdir(path)
 
     except FileExistsError:
         logging.info(f"{path} already exists.")
@@ -24,7 +24,7 @@ def create_directory(path: str) -> str:
         raise error
 
     logging.info(f"{path} was created")
-    return f"{path}"
+    return path
 
 
 def save_file(filename: str, mode: str, data: any) -> str:

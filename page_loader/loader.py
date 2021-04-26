@@ -100,9 +100,11 @@ def download_local_resources(page_url: str,
                 local_name = get_local_name(cut_item_url, ext)
 
                 response = get_response(full_item_url)
-                save_file(f"{abs_ref_dir}{local_name}", "wb", response.content)
+                save_file(os.path.join(abs_ref_dir, local_name),
+                          "wb",
+                          response.content)
 
-                item[attr] = f"{rel_ref_dir}{local_name}"
+                item[attr] = os.path.join(rel_ref_dir, local_name)
                 logging.info(f"Switch resource reference "
                              f"from '{item_url}' to '{item[attr]}'")
 
@@ -119,17 +121,15 @@ def download(url: str, path: str) -> str:
     :return: path to downloaded page
     """
 
-    if not path.endswith("/"):
-        path += "/"
     response = get_response(url)
 
     page_name = get_local_name(url, ".html")
     rel_ref_dir = get_local_name(url, '_files/')
-    abs_ref_dir = create_directory(f"{path}{rel_ref_dir}")
+    abs_ref_dir = create_directory(os.path.join(path, rel_ref_dir))
 
     page_text = download_local_resources(url,
                                          response.text,
                                          abs_ref_dir,
                                          rel_ref_dir)
 
-    return save_file(f"{path}{page_name}", "w", page_text)
+    return save_file(os.path.join(path, page_name), "w", page_text)
