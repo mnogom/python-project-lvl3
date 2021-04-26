@@ -1,8 +1,10 @@
 """Some special components tests."""
 
 import pytest
+from logging import DEBUG, WARNING
 
 from page_loader.loader import get_local_name
+from page_loader.logger_agent import get_logger
 
 
 INPUT = ("https://ru.hexlet.io/",
@@ -26,3 +28,10 @@ RESULT = ("ru-hexlet-io.html",
                          ])
 def test_local_name(url, result):
     assert get_local_name(url, ".html") == result
+
+
+@pytest.mark.parametrize("debug_mode, right_log_level",
+                         [(True, DEBUG),
+                          (False, WARNING)])
+def test_debug_activate(debug_mode, right_log_level):
+    assert get_logger(debug_mode).level == right_log_level

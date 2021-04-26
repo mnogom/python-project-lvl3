@@ -24,3 +24,5 @@ def get_logger(debug_mode):
                                   "(%(lineno)d) - %(message)s")
     handler.setFormatter(formatter)
     root.addHandler(handler)
+
+    return root
