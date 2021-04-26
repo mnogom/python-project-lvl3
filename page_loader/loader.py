@@ -6,6 +6,7 @@ from urllib.parse import urlparse, urljoin
 import logging
 
 from bs4 import BeautifulSoup
+from progress.bar import PixelBar
 
 from page_loader.file_manager import create_directory, save_file
 from page_loader.request_manager import get_response
@@ -85,8 +86,10 @@ def download_local_resources(page_url: str,
     soup = BeautifulSoup(page_html, features="html.parser")
 
     for tag, attr in resources_types.items():
+
         resource_items = soup.find_all(tag)
-        for item in resource_items:
+        bar_name = f"Searching '{attr}' in <{tag}>: "
+        for item in PixelBar(bar_name).iter(resource_items):
 
             logging.info(f"Analyze '{attr}' in '{tag}'")
 
