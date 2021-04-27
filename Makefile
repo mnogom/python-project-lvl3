@@ -1,9 +1,6 @@
 install:
 	poetry install
 
-gen-diff:
-	poetry run gendiff
-
 build:
 	poetry build
 
@@ -22,6 +19,3 @@ coverage:
 
 local-coverage:
 	poetry run pytest --cov=page_loader tests/*
-
-page_load_test:
-	poetry run page-loader
