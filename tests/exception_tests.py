@@ -4,6 +4,7 @@ import tempfile
 import os
 
 import pytest
+import requests
 import requests_mock
 
 from page_loader.loader import download
@@ -20,7 +21,7 @@ def test_requests_errors(status_code):
     with requests_mock.Mocker() as mock_up:
         mock_up.get(DEMO_URL, status_code=status_code)
 
-        with pytest.raises(ConnectionError):
+        with pytest.raises(requests.exceptions.HTTPError):
             _ = download(DEMO_URL, os.getcwd())
 
 

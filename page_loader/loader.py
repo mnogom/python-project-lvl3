@@ -29,7 +29,7 @@ def get_local_name(url: str, ext="") -> str:
         parsed_url.netloc,
         parsed_url.path,
         f"?{parsed_url.query}" if parsed_url.query else "")
-    filename = re.sub("[!@#$%^*()`~/<>|\\\"'.,]", "-", filename)
+    filename = re.sub(r"\W", "-", filename)
 
     logging.info(f"Create name '{filename}{ext}' for url '{url}{ext}'")
 

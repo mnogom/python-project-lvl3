@@ -12,25 +12,26 @@ def get_response(url: str):
     :return: full response"""
 
     response = requests.get(url)
+    status_code = response.status_code
 
-    if response.status_code // 100 == 2:
+    if status_code // 100 == 2:
         logging.info(f"Response status code is {response.status_code}")
         return response
 
-    if response.status_code // 100 == 3:
+    if status_code // 100 == 3:
         logging.info(f"Your request was "
                      f"redirected with code "
                      f"{response.status_code}")
         return response
 
-    if response.status_code // 100 == 4:
+    if status_code // 100 == 4:
         logging.warning(f"Bad request. Got error "
                         f"{response.status_code}: "
                         f"{response.reason}")
-        raise ConnectionError
+        raise response.raise_for_status()
 
-    if response.status_code // 100 == 5:
+    if status_code // 100 == 5:
         logging.warning(f"Bad answer. Got error "
                         f"{response.status_code}: "
                         f"{response.reason}")
-        raise ConnectionError
+        raise response.raise_for_status()

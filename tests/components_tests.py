@@ -19,7 +19,7 @@ RESULT = ("ru-hexlet-io.html",
           "ru-hexlet-io.html",
           "ru-hexlet-io-courses.html",
           "ru-hexlet-io-courses-intro_to_git.html",
-          "ru-hexlet-io-my-ratings-month?q-5Bcity_id_eq-5D=1.html")
+          "ru-hexlet-io-my-ratings-month-q-5Bcity_id_eq-5D-1.html")
 
 
 @pytest.mark.parametrize("url, result",
