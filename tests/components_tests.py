@@ -3,21 +3,15 @@
 import pytest
 from logging import DEBUG, WARNING
 
-from page_loader.loader import get_local_name
+from page_loader.loader import _receive_name
 from page_loader.logger_agent import get_logger
 
 
 INPUT = ("https://ru.hexlet.io/",
-         "https://ru.hexlet.io",
-         "http://ru.hexlet.io",
-         "https://ru.hexlet.io/courses",
          "https://ru.hexlet.io/courses/intro_to_git/",
          "https://ru.hexlet.io/my/ratings/month?q%5Bcity_id_eq%5D=1")
 
 RESULT = ("ru-hexlet-io.html",
-          "ru-hexlet-io.html",
-          "ru-hexlet-io.html",
-          "ru-hexlet-io-courses.html",
           "ru-hexlet-io-courses-intro_to_git.html",
           "ru-hexlet-io-my-ratings-month-q-5Bcity_id_eq-5D-1.html")
 
@@ -27,7 +21,7 @@ RESULT = ("ru-hexlet-io.html",
                              (a, b) for a, b in zip(INPUT, RESULT)
                          ])
 def test_local_name(url, result):
-    assert get_local_name(url, ".html") == result
+    assert _receive_name(url) == result
 
 
 @pytest.mark.parametrize("debug_mode, right_log_level",

@@ -12,28 +12,39 @@ from page_loader.file_manager import create_directory, save_file
 from page_loader.request_manager import get_response
 
 
-def get_local_name(url: str, ext="") -> str:
+def _receive_name(url: str, isdir=False) -> str:
     """Convert url to local name.
 
     :param url: input url
-    :param ext: extension (ending of filename)
+    :param isdir: is name for directory
     """
 
-    if url.endswith("/"):
-        url = url[:-1]
-    if not ext:
-        ext = ".html"
+    url_name, ext = os.path.splitext(url)
 
-    parsed_url = urlparse(url)
+    # todo: #1 fix it
+    if url_name.endswith("/"):
+        url_name = url_name[:-1]
+
+    parsed_name_url = urlparse(url_name)
     filename = "{}{}{}".format(
-        parsed_url.netloc,
-        parsed_url.path,
-        f"?{parsed_url.query}" if parsed_url.query else "")
+        parsed_name_url.netloc,
+        parsed_name_url.path,
+        f"?{parsed_name_url.query}" if parsed_name_url.query else "")
     filename = re.sub(r"\W", "-", filename)
 
-    logging.info(f"Create name '{filename}{ext}' for url '{url}{ext}'")
+    if isdir:
+        full_filename = filename + "_files"
+        logging.info(f"Create name '{full_filename}' for  directory of "
+                     f"references of '{url}'")
 
-    return filename + ext
+    else:
+        if ext:
+            full_filename = filename + ext
+        else:
+            full_filename = filename + ".html"
+        logging.info(f"Create name '{full_filename}' for url '{url}'")
+
+    return full_filename
 
 
 def is_local_resource(item_url: str, page_url: str) -> bool:
@@ -88,6 +99,9 @@ def download_local_resources(page_url: str,
     for tag, attr in resources_types.items():
 
         resource_items = soup.find_all(tag)
+        if not resource_items:
+            break
+
         bar_name = f"Searching '{attr}' in <{tag}>: "
         for item in PixelBar(bar_name).iter(resource_items):
 
@@ -98,9 +112,7 @@ def download_local_resources(page_url: str,
             if is_local_resource(item_url, page_url):
                 full_item_url = urljoin(page_url, item_url)
 
-                cut_item_url, ext = os.path.splitext(full_item_url)
-
-                local_name = get_local_name(cut_item_url, ext)
+                local_name = _receive_name(full_item_url)
 
                 response = get_response(full_item_url)
                 save_file(os.path.join(abs_ref_dir, local_name),
@@ -126,8 +138,11 @@ def download(url: str, path: str) -> str:
 
     response = get_response(url)
 
-    page_name = get_local_name(url, ".html")
-    rel_ref_dir = get_local_name(url, '_files/')
+    # todo: #1 fix it
+    full_url = url if url.endswith("/") else url + "/"
+
+    page_name = _receive_name(full_url)
+    rel_ref_dir = _receive_name(full_url, isdir=True)
     abs_ref_dir = create_directory(os.path.join(path, rel_ref_dir))
 
     page_text = download_local_resources(url,

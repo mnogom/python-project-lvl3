@@ -1,12 +1,16 @@
 import os
 import tempfile
+from urllib.parse import urljoin
 
 import requests_mock
 
 from page_loader.loader import download
 
 
-DEMO_URL = "http://example.ru"
+DEMO_URLS = [
+    "http://example.ru",
+    "http://example.ru/",
+]
 RIGHT_HTML_DIR = "tests/fixtures/demo_page/out"
 FIXTURE_DIR = "tests/fixtures/demo_page/"
 
@@ -40,31 +44,34 @@ def test_download_page():
      img_content,
      js_content) = _get_contents()
 
-    with requests_mock.Mocker() as mock_up:
-        mock_up.get(DEMO_URL, text=html_text)
-        mock_up.get(f"{DEMO_URL}/css/styles.css", content=css_content)
-        mock_up.get(f"{DEMO_URL}/img/googlelogo.png", content=img_content)
-        mock_up.get(f"{DEMO_URL}/js/scripts.js", content=js_content)
+    for url in DEMO_URLS:
 
-        with tempfile.TemporaryDirectory(dir=FIXTURE_DIR) as temp_dir:
-            result = download(DEMO_URL, temp_dir)
+        with requests_mock.Mocker() as mock_up:
+            mock_up.get(url, text=html_text)
+            mock_up.get(urljoin(url, "css/styles.css"), content=css_content)
+            mock_up.get(urljoin(url, "img/googlelogo.png"), content=img_content)
+            mock_up.get(urljoin(url, "js/scripts.js"), content=js_content)
 
-            result_path, _ = os.path.split(result)
-            result_tree = sorted(list(os.walk(result_path)))
-            right_tree = sorted(list(os.walk(RIGHT_HTML_DIR)))
+            with tempfile.TemporaryDirectory(dir=FIXTURE_DIR) as temp_dir:
+                result = download(url, temp_dir)
 
-            for result_node, right_node in zip(result_tree, right_tree):
-                result_dir_name, result_dirs, result_files = result_node
-                right_dir_name, right_dirs, right_files = right_node
+                result_path, _ = os.path.split(result)
+                result_tree = sorted(list(os.walk(result_path)))
+                right_tree = sorted(list(os.walk(RIGHT_HTML_DIR)))
 
-                assert sorted(result_dirs) == sorted(right_dirs)
-                assert sorted(result_files) == sorted(right_files)
+                for result_node, right_node in zip(result_tree, right_tree):
+                    result_dir_name, result_dirs, result_files = result_node
+                    right_dir_name, right_dirs, right_files = right_node
 
-                result_files = sorted(result_files)
-                right_files = sorted(right_files)
+                    assert sorted(result_dirs) == sorted(right_dirs)
+                    assert sorted(result_files) == sorted(right_files)
 
-                for result_file, right_file in zip(result_files, right_files):
-                    assert _compare_files_content(
-                        f"{result_dir_name}/{result_file}",
-                        f"{right_dir_name}/{right_file}"
-                    )
+                    result_files = sorted(result_files)
+                    right_files = sorted(right_files)
+
+                    for result_file, right_file in zip(result_files,
+                                                       right_files):
+                        assert _compare_files_content(
+                            f"{result_dir_name}/{result_file}",
+                            f"{right_dir_name}/{right_file}"
+                        )
