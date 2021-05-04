@@ -1,7 +1,6 @@
 # Page downloader
 
 ---
-### Cool badges:
 [![python-ci](https://github.com/mnogom/python-project-lvl3/actions/workflows/python-ci.yml/badge.svg)](https://github.com/mnogom/python-project-lvl3/actions/workflows/python-ci.yml)
 [![Actions Status](https://github.com/mnogom/python-project-lvl3/workflows/hexlet-check/badge.svg)](https://github.com/mnogom/python-project-lvl3/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/c9a7a065349f3971e29c/maintainability)](https://codeclimate.com/github/mnogom/python-project-lvl3/maintainability)
@@ -28,7 +27,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -o OUTPUT, --output OUTPUT
                         destination for download
-  -d, --debug           activate DEBUG mod
+  -d, --debug           activate DEBUG mode
 ```
 
 2. From Python

@@ -16,7 +16,7 @@ def parse_args():
                         help="destination for download",
                         default=os.getcwd())
     parser.add_argument("-d", "--debug",
-                        help="activate DEBUG mod",
+                        help="activate DEBUG mode",
                         default=False,
                         action="store_true")
     args = parser.parse_args()
