@@ -4,7 +4,7 @@ import logging
 import os
 
 
-def create_directory(path: str) -> str:
+def make_dir(path: str) -> str:
     """Crete directory.
 
     :param path: full path to directory with its name
