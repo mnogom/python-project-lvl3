@@ -11,27 +11,24 @@ def get_response(url: str):
     :param url: requested url
     :return: full response"""
 
-    response = requests.get(url)
-    status_code = response.status_code
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
 
-    if status_code // 100 == 2:
-        logging.info(f"Response status code is {response.status_code}")
-        return response
+    except requests.ConnectionError as error:
+        logging.warning(f"Connection error. {error}")
+        raise error
 
-    if status_code // 100 == 3:
-        logging.info(f"Your request was "
-                     f"redirected with code "
-                     f"{response.status_code}")
-        return response
+    except requests.Timeout as error:
+        logging.warning(f"Timeout error. {error}")
+        raise error
 
-    if status_code // 100 == 4:
-        logging.warning(f"Bad request. Got error "
-                        f"{response.status_code}: "
-                        f"{response.reason}")
-        raise response.raise_for_status()
+    except requests.TooManyRedirects as error:
+        logging.warning(f"TooManyRedirectsError. {error}")
+        raise error
 
-    if status_code // 100 == 5:
-        logging.warning(f"Bad answer. Got error "
-                        f"{response.status_code}: "
-                        f"{response.reason}")
-        raise response.raise_for_status()
+    except requests.HTTPError as error:
+        logging.warning(f"Status bad code: {response.status_code}. {error}")
+        raise error
+
+    return response

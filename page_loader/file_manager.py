@@ -19,7 +19,7 @@ def make_dir(path: str) -> str:
     except FileExistsError:
         logging.info(f"{path} already exists.")
 
-    except Exception as error:
+    except OSError as error:
         logging.warning(error)
         raise error
 
@@ -42,7 +42,7 @@ def save_file(filename: str, mode: str, data: any) -> str:
         with open(filename, mode) as file:
             file.write(data)
 
-    except Exception as error:
+    except OSError as error:
         logging.warning(error)
         raise error
 
