@@ -1,7 +1,9 @@
 """File manager."""
 
-import logging
 import os
+import logging
+
+from page_loader.errors import PLPermissionError, PLFileNotFoundError
 
 
 def make_dir(path: str) -> str:
@@ -19,9 +21,9 @@ def make_dir(path: str) -> str:
     except FileExistsError:
         logging.info(f"{path} already exists.")
 
-    except OSError as error:
-        logging.warning(error)
-        raise error
+    except FileNotFoundError as exception:
+        logging.info(exception)
+        raise PLFileNotFoundError(exception)
 
     logging.info(f"{path} was created")
     return path
@@ -42,9 +44,13 @@ def save_file(filename: str, mode: str, data: any) -> str:
         with open(filename, mode) as file:
             file.write(data)
 
-    except OSError as error:
-        logging.warning(error)
-        raise error
+    except PermissionError as exception:
+        logging.info(exception)
+        raise PLPermissionError(exception)
+
+    except FileNotFoundError as exception:
+        logging.info(exception)
+        raise PLFileNotFoundError(exception)
 
     logging.info(f"File '{filename}' was saved with mode '{mode}'")
     return filename

@@ -7,7 +7,7 @@ import os
 def parse_args():
     """Parse input parameters.
 
-    :return: file paths and arguments
+    :return: url, file path and debug status
     """
 
     parser = argparse.ArgumentParser(description="Page loader")

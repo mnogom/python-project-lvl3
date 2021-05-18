@@ -40,7 +40,7 @@ page_loader.download("https://some_url.com/some_page", "path/to/file")
 ---
 ### Features
 1. Download main page and all relative references
-2. <s>Progress bar</s>
+2. Progress bar
 3. Debug mode (enable all logger messages)
 
 *See examples below*
@@ -48,7 +48,7 @@ page_loader.download("https://some_url.com/some_page", "path/to/file")
 ---
 ### Examples
 #### Download page
-[![asciicast](https://asciinema.org/a/awY1VkeOO1mzCkv4hzKB6BZiH.svg)](https://asciinema.org/a/awY1VkeOO1mzCkv4hzKB6BZiH)
+[![asciicast](https://asciinema.org/a/NLQKhnpwyZbIufIZoF0j2AiR0.svg)](https://asciinema.org/a/NLQKhnpwyZbIufIZoF0j2AiR0)
 
 #### Debug mod
-[![asciicast](https://asciinema.org/a/tsHzffNYjqKZZZn9JJltp3aDG.svg)](https://asciinema.org/a/tsHzffNYjqKZZZn9JJltp3aDG)
+[![asciicast](https://asciinema.org/a/tsHzffNYjqKZZZn9JJltp3aDG.svg)](https://asciinema.org/a/NLQKhnpwyZbIufIZoF0j2AiR0)

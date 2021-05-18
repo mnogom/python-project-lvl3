@@ -12,16 +12,17 @@ from page_loader.file_manager import make_dir, save_file
 from page_loader.request_manager import get_response
 
 
-def _receive_name(url: str, isdir=False) -> str:
+def _generate_name(url: str, isdir=False) -> str:
     """Convert url to local name.
 
     :param url: input url
     :param isdir: is name for directory
+    :return: local name for url
     """
 
     url_name, ext = os.path.splitext(url)
 
-    # TODO: #1.1 some trouble when root url ends without "/"
+    # TODO: #1.1 some trouble when root url ends with "/"
     if url_name.endswith("/"):
         url_name = url_name[:-1]
 
@@ -78,11 +79,12 @@ def _download_assert(assert_url: str,
 
     :param assert_url: url
     :param abs_ref_dir: absolute path
+    :return: local name for assert
     """
 
     response = get_response(assert_url)
 
-    local_name = _receive_name(assert_url)
+    local_name = _generate_name(assert_url)
     if not os.path.isdir(abs_ref_dir):
         make_dir(abs_ref_dir)
     full_path = os.path.join(abs_ref_dir, local_name)
@@ -101,8 +103,8 @@ def download(url: str, path: str) -> str:  # noqa: C901
     # TODO: #1.2 some trouble when root url ends without "/"
     full_url = url if url.endswith("/") else url + "/"
     response = get_response(url)
-    page_name = _receive_name(full_url)
-    page_dir = _receive_name(full_url, isdir=True)
+    page_name = _generate_name(full_url)
+    page_dir = _generate_name(full_url, isdir=True)
     abs_dir = os.path.join(path, page_dir)
 
     logging.info("Starting analyzing page asserts")
@@ -117,22 +119,21 @@ def download(url: str, path: str) -> str:  # noqa: C901
     for tag, attr in asserts_types.items():
 
         assert_items = soup.find_all(tag)
-        if not assert_items:
-            break
+        if assert_items:
+            for item in assert_items:
+                logging.info(f"Analyze '{attr}' in '{tag}'")
 
-        for item in assert_items:
-            logging.info(f"Analyze '{attr}' in '{tag}'")
+                item_url = item.get(attr)
 
-            item_url = item.get(attr)
+                if _is_local_assert(item_url, url):
+                    full_item_url = urljoin(url, item_url)
 
-            if _is_local_assert(item_url, url):
-                full_item_url = urljoin(url, item_url)
+                    assert_urls.append(full_item_url)
+                    local_name = _generate_name(full_item_url)
+                    item[attr] = os.path.join(page_dir, local_name)
+                    logging.info(f"Switch assert reference "
+                                 f"'{item[attr]}'")
 
-                assert_urls.append(full_item_url)
-                local_name = _receive_name(full_item_url)
-                item[attr] = os.path.join(page_dir, local_name)
-                logging.info(f"Switch assert reference "
-                             f"'{item[attr]}'")
     page_text = soup.prettify(formatter="html5")
     logging.info("End of analyzing page asserts")
 

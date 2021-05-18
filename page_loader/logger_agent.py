@@ -5,17 +5,23 @@ import logging
 
 
 def get_logger(debug_mode):
-    """Init logger configuration."""
+    """Init logger configuration.
+
+    :param debug_mode: activate debug output
+    :return: logger
+    """
 
     root = logging.getLogger()
 
     if debug_mode:
-        root.setLevel(logging.DEBUG)
+        level = logging.DEBUG
     else:
-        root.setLevel(logging.WARNING)
+        level = logging.WARNING
+
+    root.setLevel(level)
 
     handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.DEBUG)
+    handler.setLevel(level)
     formatter = logging.Formatter("%(asctime)s - "
                                   "[%(levelname)s] -  "
                                   "%(name)s - "
