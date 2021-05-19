@@ -21,6 +21,10 @@ def make_dir(path: str) -> str:
     except FileExistsError:
         logging.info(f"{path} already exists.")
 
+    except PermissionError as exception:
+        logging.info(exception)
+        raise PLPermissionError(exception)
+
     except FileNotFoundError as exception:
         logging.info(exception)
         raise PLFileNotFoundError(exception)
