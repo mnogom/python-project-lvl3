@@ -10,10 +10,10 @@ from urllib.parse import urljoin
 
 from page_loader.loader import download
 from page_loader.errors import PLHTTPStatusError, \
-    PLPermissionError, PLFileNotFoundError, PLTooManyRedirectsError, \
+    PLPermissionError, PLFileExistsError, PLTooManyRedirectsError, \
     PLTimeoutError, PLConnectionError
 
-from tests.loader_tests import _get_contents
+from tests.test_loader import _get_contents
 
 URL = "https://example.ru"
 
@@ -112,5 +112,5 @@ def test_write_to_nonexistent_directory(with_asserts):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             tempfile.TemporaryDirectory()
-            with pytest.raises(PLFileNotFoundError):
+            with pytest.raises(PLFileExistsError):
                 _ = download(URL, f"{temp_dir}/not/existent/dir")

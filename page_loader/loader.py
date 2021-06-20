@@ -37,19 +37,19 @@ def _generate_name(url: str, isdir=False) -> str:
         full_filename = filename + "_files"
         logging.info(f"Create name '{full_filename}' for  directory of "
                      f"references of '{url}'")
+        return full_filename
 
+    if ext:
+        full_filename = filename + ext
     else:
-        if ext:
-            full_filename = filename + ext
-        else:
-            full_filename = filename + ".html"
+        full_filename = filename + ".html"
         logging.info(f"Create name '{full_filename}' for url '{url}'")
 
     return full_filename
 
 
-def _is_local_assert(item_url: str, page_url: str) -> bool:
-    """Check if assert is local.
+def _is_local_asset(item_url: str, page_url: str) -> bool:
+    """Check if asset is local.
 
     :param item_url: reference url
     :param page_url: page url
@@ -73,18 +73,18 @@ def _is_local_assert(item_url: str, page_url: str) -> bool:
     return False
 
 
-def _download_assert(assert_url: str,
-                     abs_ref_dir: str) -> str:
-    """Download assert by url to dir.
+def _download_asset(asset_url: str,
+                    abs_ref_dir: str) -> str:
+    """Download asset by url to dir.
 
-    :param assert_url: url
+    :param asset_url: url
     :param abs_ref_dir: absolute path
-    :return: local name for assert
+    :return: local name for asset
     """
 
-    response = get_response(assert_url)
+    response = get_response(asset_url)
 
-    local_name = _generate_name(assert_url)
+    local_name = _generate_name(asset_url)
     if not os.path.isdir(abs_ref_dir):
         make_dir(abs_ref_dir)
     full_path = os.path.join(abs_ref_dir, local_name)
@@ -93,7 +93,7 @@ def _download_assert(assert_url: str,
 
 
 def download(url: str, path: str) -> str:  # noqa: C901
-    """Download page and all local asserts.
+    """Download page and all local assets.
 
     :param url: requested url
     :param path: path to download
@@ -102,45 +102,46 @@ def download(url: str, path: str) -> str:  # noqa: C901
 
     # TODO: #1.2 some trouble when root url ends without "/"
     full_url = url if url.endswith("/") else url + "/"
+
     response = get_response(url)
     page_name = _generate_name(full_url)
     page_dir = _generate_name(full_url, isdir=True)
     abs_dir = os.path.join(path, page_dir)
 
-    logging.info("Starting analyzing page asserts")
-    asserts_types = {
+    logging.info("Starting analyzing page assets")
+    assets_types = {
         "img": "src",
         "script": "src",
         "link": "href"
     }
-    assert_urls = []
+    asset_urls = []
 
     soup = BeautifulSoup(response.text, features="html.parser")
-    for tag, attr in asserts_types.items():
+    for tag, attr in assets_types.items():
 
-        assert_items = soup.find_all(tag)
-        if assert_items:
-            for item in assert_items:
+        asset_items = soup.find_all(tag)
+        if asset_items:
+            for item in asset_items:
                 logging.info(f"Analyze '{attr}' in '{tag}'")
 
                 item_url = item.get(attr)
 
-                if _is_local_assert(item_url, url):
+                if _is_local_asset(item_url, url):
                     full_item_url = urljoin(url, item_url)
 
-                    assert_urls.append(full_item_url)
+                    asset_urls.append(full_item_url)
                     local_name = _generate_name(full_item_url)
                     item[attr] = os.path.join(page_dir, local_name)
-                    logging.info(f"Switch assert reference "
+                    logging.info(f"Switch asset reference "
                                  f"'{item[attr]}'")
 
     page_text = soup.prettify(formatter="html5")
-    logging.info("End of analyzing page asserts")
+    logging.info("End of analyzing page assets")
 
-    if assert_urls:
-        logging.info("Starting downloading asserts")
-        bar_name = "Downloading asserts: "
-        for url in PixelBar(bar_name).iter(assert_urls):
-            _download_assert(url, abs_dir)
+    if asset_urls:
+        logging.info("Starting downloading assets")
+        bar_name = "Downloading assets: "
+        for url in PixelBar(bar_name).iter(asset_urls):
+            _download_asset(url, abs_dir)
 
     return save_file(os.path.join(path, page_name), "w", page_text)

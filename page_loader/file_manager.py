@@ -3,7 +3,7 @@
 import os
 import logging
 
-from page_loader.errors import PLPermissionError, PLFileNotFoundError
+from page_loader.errors import PLPermissionError, PLFileExistsError
 
 
 def make_dir(path: str) -> str:
@@ -27,7 +27,7 @@ def make_dir(path: str) -> str:
 
     except FileNotFoundError as exception:
         logging.info(exception)
-        raise PLFileNotFoundError(exception)
+        raise PLFileExistsError(exception)
 
     logging.info(f"{path} was created")
     return path
@@ -54,7 +54,7 @@ def save_file(filename: str, mode: str, data: any) -> str:
 
     except FileNotFoundError as exception:
         logging.info(exception)
-        raise PLFileNotFoundError(exception)
+        raise PLFileExistsError(exception)
 
     logging.info(f"File '{filename}' was saved with mode '{mode}'")
     return filename

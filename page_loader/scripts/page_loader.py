@@ -6,9 +6,14 @@ import sys
 from page_loader.loader import download
 from page_loader.cli import parse_args
 from page_loader.logger_agent import get_logger
-from page_loader.errors import PLTimeoutError, PLConnectionError, \
-    PLPermissionError, PLFileNotFoundError, PLTooManyRedirectsError, \
+from page_loader.errors import (
+    PLTimeoutError,
+    PLPermissionError,
+    PLConnectionError,
+    PLFileExistsError,
+    PLTooManyRedirectsError,
     PLHTTPStatusError
+)
 
 
 def main():
@@ -22,7 +27,7 @@ def main():
     except (PLTimeoutError,
             PLConnectionError,
             PLPermissionError,
-            PLFileNotFoundError,
+            PLFileExistsError,
             PLTooManyRedirectsError,
             PLHTTPStatusError) as exception:
         print(str(exception))

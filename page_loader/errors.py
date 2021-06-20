@@ -1,4 +1,4 @@
-"""Errors."""
+"""Exceptions."""
 
 import requests
 
@@ -9,7 +9,7 @@ class PLPermissionError(PermissionError):
     pass
 
 
-class PLFileNotFoundError(FileExistsError):
+class PLFileExistsError(FileExistsError):
     """File not found error."""
 
     pass
