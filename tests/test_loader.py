@@ -1,10 +1,10 @@
 import os
 import tempfile
-from urllib.parse import urljoin
 
 import requests_mock
 
 from page_loader.loader import download
+from tests.configurator import setup_mock
 
 
 DEMO_URLS = [
@@ -13,19 +13,6 @@ DEMO_URLS = [
 ]
 RIGHT_HTML_DIR = "tests/fixtures/demo_page/out"
 FIXTURE_DIR = "tests/fixtures/demo_page/"
-
-
-def _get_contents():
-    with open("tests/fixtures/demo_page/in/example.html", "r") as file:
-        html_text = file.read()
-    with open("tests/fixtures/demo_page/in/css/styles.css", "rb") as file:
-        css_content = file.read()
-    with open("tests/fixtures/demo_page/in/img/googlelogo.png", "rb") as file:
-        img_content = file.read()
-    with open("tests/fixtures/demo_page/in/js/scripts.js", "rb") as file:
-        js_content = file.read()
-
-    return html_text, css_content, img_content, js_content
 
 
 def _compare_files_content(result_path, right_path):
@@ -40,18 +27,10 @@ def _compare_files_content(result_path, right_path):
 def test_download_page():
     """Check main features of app."""
 
-    (html_text,
-     css_content,
-     img_content,
-     js_content) = _get_contents()
-
     for url in DEMO_URLS:
 
         with requests_mock.Mocker() as mock_up:
-            mock_up.get(url, text=html_text)
-            mock_up.get(urljoin(url, "css/styles.css"), content=css_content)
-            mock_up.get(urljoin(url, "img/googlelogo.png"), content=img_content)
-            mock_up.get(urljoin(url, "js/scripts.js"), content=js_content)
+            setup_mock(mock_up, url, include_assets=True)
 
             with tempfile.TemporaryDirectory(dir=FIXTURE_DIR) as temp_dir:
                 result = download(url, temp_dir)

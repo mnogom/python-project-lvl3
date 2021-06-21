@@ -6,14 +6,13 @@ import os
 import pytest
 import requests_mock
 import requests
-from urllib.parse import urljoin
 
 from page_loader.loader import download
 from page_loader.errors import PLHTTPStatusError, \
     PLPermissionError, PLFileExistsError, PLTooManyRedirectsError, \
     PLTimeoutError, PLConnectionError
 
-from tests.test_loader import _get_contents
+from tests.configurator import setup_mock
 
 URL = "https://example.ru"
 
@@ -65,50 +64,26 @@ def test_connection_error():
                 _ = download(URL, temp_dir)
 
 
-@pytest.mark.parametrize("with_asserts", [True, False])
-def test_write_permission_error(with_asserts):
+@pytest.mark.parametrize("with_assets", [True, False])
+def test_write_permission_error(with_assets):
     """Check if raise error with writing to non access directory."""
 
     sys_dir = list(filter(lambda x: x.lower().startswith("sys"),
                           os.listdir("/")))[0]
 
     with requests_mock.Mocker() as mock_up:
-        if with_asserts:
-            (html_text,
-             css_content,
-             img_content,
-             js_content) = _get_contents()
-
-            mock_up.get(URL, text=html_text)
-            mock_up.get(urljoin(URL, "css/styles.css"), content=css_content)
-            mock_up.get(urljoin(URL, "img/googlelogo.png"), content=img_content)
-            mock_up.get(urljoin(URL, "js/scripts.js"), content=js_content)
-
-        else:
-            mock_up.get(URL, text="empty")
+        setup_mock(mock_up, URL, include_assets=with_assets)
 
         with pytest.raises(PLPermissionError):
             _ = download(URL, f"/{sys_dir}")
 
 
-@pytest.mark.parametrize("with_asserts", [True, False])
-def test_write_to_nonexistent_directory(with_asserts):
+@pytest.mark.parametrize("with_assets", [True, False])
+def test_write_to_nonexistent_directory(with_assets):
     """Check if raise error with writing to no nonexistent directory."""
 
     with requests_mock.Mocker() as mock_up:
-        if with_asserts:
-            (html_text,
-             css_content,
-             img_content,
-             js_content) = _get_contents()
-
-            mock_up.get(URL, text=html_text)
-            mock_up.get(urljoin(URL, "css/styles.css"), content=css_content)
-            mock_up.get(urljoin(URL, "img/googlelogo.png"), content=img_content)
-            mock_up.get(urljoin(URL, "js/scripts.js"), content=js_content)
-
-        else:
-            mock_up.get(URL, text="empty")
+        setup_mock(mock_up, URL, with_assets)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             tempfile.TemporaryDirectory()

@@ -154,26 +154,19 @@ def download(url: str, path: str) -> str:
     # TODO: #1.2 some trouble when root url ends without "/"
     full_url = url if url.endswith("/") else url + "/"
 
-    # --- Get response from url
     response = get_response(url)
 
-    # --- Generate names for page and page's assets directory
     page_name = _generate_name(full_url)
     asset_rel_dir = _generate_name(full_url, isdir=True)
     asset_abs_dir = os.path.join(path, asset_rel_dir)
 
-    # --- Prepare soup
     soup = BeautifulSoup(response.text, features="html.parser")
-
-    # --- Switch assets to local
     assets_map = _switch_assets(soup, full_url, asset_rel_dir, asset_abs_dir)
 
-    # --- Save page
     page_path = save_file(os.path.join(path, page_name),
                           "w",
                           soup.prettify(formatter="html5"))
 
-    # --- Download assets
     _download_assets(assets_map, asset_abs_dir)
 
     return page_path
