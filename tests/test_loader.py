@@ -33,6 +33,7 @@ def _compare_files_content(result_path, right_path):
         result_content = file.read()
     with open(right_path, "rb") as file:
         right_content = file.read()
+
     return result_content == right_content
 
 
