@@ -143,7 +143,7 @@ def _download_assets(assets_map: list, asset_abs_dir: str) -> None:
             save_file(asset_name, "wb", response.content)
 
 
-def download(url: str, path: str) -> str:
+def download(url: str, path=os.getcwd()) -> str:
     """Download page and all local assets.
 
     :param url: requested url

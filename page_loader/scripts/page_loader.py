@@ -6,7 +6,7 @@ import sys
 from page_loader.loader import download
 from page_loader.cli import parse_args
 from page_loader.logger_agent import get_logger
-from page_loader.errors import (
+from page_loader.exceptions import (
     PLTimeoutError,
     PLPermissionError,
     PLConnectionError,

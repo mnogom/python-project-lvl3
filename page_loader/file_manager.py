@@ -3,7 +3,7 @@
 import os
 import logging
 
-from page_loader.errors import PLPermissionError, PLFileExistsError
+from page_loader.exceptions import PLPermissionError, PLFileExistsError
 
 
 def make_dir(path: str) -> str:

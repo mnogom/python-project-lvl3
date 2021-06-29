@@ -4,7 +4,7 @@ import logging
 
 import requests
 
-from page_loader.errors import PLTimeoutError, PLHTTPStatusError, \
+from page_loader.exceptions import PLTimeoutError, PLHTTPStatusError, \
     PLTooManyRedirectsError, PLConnectionError
 
 
