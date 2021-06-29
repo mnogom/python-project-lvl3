@@ -8,8 +8,8 @@ import logging
 from bs4 import BeautifulSoup
 from progress.bar import PixelBar
 
-from page_loader.file_manager import make_dir, save_file
-from page_loader.request_manager import get_response
+from page_loader.file_system import make_dir, save_file
+from page_loader.network import make_request
 
 
 def _generate_name(url: str, isdir=False) -> str:
@@ -73,10 +73,7 @@ def _is_local_asset(item_url: str, page_url: str) -> bool:
     return False
 
 
-def _switch_assets(soup,
-                   page_url: str,
-                   asset_rel_dir: str,
-                   asset_abs_dir: str) -> list:
+def _switch_assets(soup, page_url: str, asset_rel_dir: str) -> list:
     """Find and switch all local assets
 
     :param soup: soup data
@@ -92,55 +89,53 @@ def _switch_assets(soup,
         "script": "src",
         "link": "href"
     }
-    assets_map = []
+    assets_to_download = []
 
     for tag, attr in assets_types.items():
 
         asset_items = soup.find_all(tag)
-        if asset_items:
-            for item in asset_items:
-                logging.info(f"Analyze '{attr}' in '{tag}'")
+        for item in asset_items:
+            logging.info(f"Analyze '{attr}' in '{tag}'")
 
-                item_url = item.get(attr)
+            item_url = item.get(attr)
 
-                if _is_local_asset(item_url, page_url):
-                    item_url = urljoin(page_url, item_url)
-                    filename = _generate_name(item_url)
+            if _is_local_asset(item_url, page_url):
+                item_url = urljoin(page_url, item_url)
+                filename = _generate_name(item_url)
 
-                    rel_filepath = os.path.join(asset_rel_dir, filename)
-                    abs_filepath = os.path.join(asset_abs_dir, filename)
+                rel_filepath = os.path.join(asset_rel_dir, filename)
 
-                    item[attr] = rel_filepath
-                    assets_map.append({
-                        "url": item_url,
-                        "filepath": abs_filepath
-                    })
+                item[attr] = rel_filepath
+                assets_to_download.append({
+                    "url": item_url,
+                    "filename": filename
+                })
 
-                    logging.info(f"Switch asset reference "
-                                 f"'{item[attr]}'")
+                logging.info(f"Switch asset reference "
+                             f"'{item[attr]}'")
 
     logging.info("End of analyzing page assets")
-    return assets_map
+    return assets_to_download
 
 
-def _download_assets(assets_map: list, asset_abs_dir: str) -> None:
+def _download_assets(assets_to_download: list, asset_abs_dir: str) -> None:
     """Download asset by url to dir.
 
-    :param assets_map: list of url and path for asset
+    :param assets_to_download: list of url and path for asset
     :return: local name for asset
     """
-    if assets_map:
-        if not os.path.isdir(asset_abs_dir):
-            logging.info(f"Create directory '{asset_abs_dir}' for assets")
-            make_dir(asset_abs_dir)
 
-        logging.info("Starting downloading assets")
+    if not os.path.isdir(asset_abs_dir):
+        logging.info(f"Create directory '{asset_abs_dir}' for assets")
+        make_dir(asset_abs_dir)
 
-        bar_name = "Downloading assets: "
-        for asset in PixelBar(bar_name).iter(assets_map):
-            response = get_response(asset["url"])
-            asset_name = asset["filepath"]
-            save_file(asset_name, "wb", response.content)
+    logging.info("Starting downloading assets")
+
+    bar_name = "Downloading assets: "
+    for asset in PixelBar(bar_name).iter(assets_to_download):
+        response = make_request(asset["url"])
+        asset_path = os.path.join(asset_abs_dir, asset["filename"])
+        save_file(asset_path, "wb", response.content)
 
 
 def download(url: str, path=os.getcwd()) -> str:
@@ -154,19 +149,20 @@ def download(url: str, path=os.getcwd()) -> str:
     # TODO: #1.2 some trouble when root url ends without "/"
     full_url = url if url.endswith("/") else url + "/"
 
-    response = get_response(url)
+    response = make_request(url)
 
     page_name = _generate_name(full_url)
     asset_rel_dir = _generate_name(full_url, isdir=True)
     asset_abs_dir = os.path.join(path, asset_rel_dir)
 
     soup = BeautifulSoup(response.text, features="html.parser")
-    assets_map = _switch_assets(soup, full_url, asset_rel_dir, asset_abs_dir)
+    assets_to_download = _switch_assets(soup, full_url, asset_rel_dir)
 
     page_path = save_file(os.path.join(path, page_name),
                           "w",
                           soup.prettify(formatter="html5"))
 
-    _download_assets(assets_map, asset_abs_dir)
+    if assets_to_download:
+        _download_assets(assets_to_download, asset_abs_dir)
 
     return page_path

@@ -5,12 +5,12 @@ from requests_mock import Mocker
 from requests.exceptions import Timeout, ConnectionError, TooManyRedirects
 
 from page_loader.loader import download
-from page_loader.exceptions import (PLHTTPStatusError,
-                                    PLPermissionError,
-                                    PLFileExistsError,
-                                    PLTooManyRedirectsError,
-                                    PLTimeoutError,
-                                    PLConnectionError)
+from page_loader.exceptions import (PLHTTPStatusException,
+                                    PLPermissionException,
+                                    PLFileExistsException,
+                                    PLTooManyRedirectsException,
+                                    PLTimeoutException,
+                                    PLConnectionException)
 
 URL = "https://example.ru"
 HTML_PAGE = "Empty page"
@@ -24,14 +24,14 @@ def test_requests_errors(status_code):
     with Mocker() as mock_up:
         mock_up.get(URL, status_code=status_code)
 
-        with pytest.raises(PLHTTPStatusError):
+        with pytest.raises(PLHTTPStatusException):
             _ = download(URL)
 
 
 @pytest.mark.parametrize("error, exception",
-                         [(Timeout, PLTimeoutError),
-                          (ConnectionError, PLConnectionError),
-                          (TooManyRedirects, PLTooManyRedirectsError)])
+                         [(Timeout, PLTimeoutException),
+                          (ConnectionError, PLConnectionException),
+                          (TooManyRedirects, PLTooManyRedirectsException)])
 def test_connection_exceptions(error, exception):
     """Check if raises Timeout, Connection and TooManyRedirect exceptions."""
 
@@ -43,9 +43,11 @@ def test_connection_exceptions(error, exception):
 
 
 @pytest.mark.parametrize("dir_path, exception",
-                         [("/", PLPermissionError),
-                          ("not/existent/dir", PLFileExistsError)])
+                         [("/", PLPermissionException),
+                          ("not/existent/dir", PLFileExistsException)])
 def test_file_exceptions(dir_path, exception):
+    """Check if raises Permission and FileExists exceptions."""
+
     with Mocker() as mock_up:
         mock_up.register_uri("GET", URL, text=HTML_PAGE)
 

@@ -8,10 +8,12 @@ from page_loader.logger_agent import get_logger
 
 
 INPUT = ("https://ru.hexlet.io/",
+         # "https://ru.hexlet.io",
          "https://ru.hexlet.io/courses/intro_to_git/",
          "https://ru.hexlet.io/my/ratings/month?q%5Bcity_id_eq%5D=1")
 
 RESULT = ("ru-hexlet-io.html",
+          # "ru-hexlet-io.html",
           "ru-hexlet-io-courses-intro_to_git.html",
           "ru-hexlet-io-my-ratings-month-q-5Bcity_id_eq-5D-1.html")
 

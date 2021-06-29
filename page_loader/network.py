@@ -1,15 +1,17 @@
-"""Request manager."""
+"""Network."""
 
 import logging
 
 import requests
 
-from page_loader.exceptions import PLTimeoutError, PLHTTPStatusError, \
-    PLTooManyRedirectsError, PLConnectionError
+from page_loader.exceptions import (PLTimeoutException,
+                                    PLHTTPStatusException,
+                                    PLTooManyRedirectsException,
+                                    PLConnectionException)
 
 
-def get_response(url: str):
-    """Get response from server.
+def make_request(url: str):
+    """Make request to server.
 
     :param url: requested url
     :return: full response"""
@@ -20,18 +22,18 @@ def get_response(url: str):
 
     except requests.ConnectionError as exception:
         logging.info(f"Connection error. {exception}")
-        raise PLConnectionError(exception)
+        raise PLConnectionException(exception)
 
     except requests.Timeout as exception:
         logging.info(f"Timeout error. {exception}")
-        raise PLTimeoutError(exception)
+        raise PLTimeoutException(exception)
 
     except requests.TooManyRedirects as exception:
         logging.info(f"TooManyRedirectsError. {exception}")
-        raise PLTooManyRedirectsError(exception)
+        raise PLTooManyRedirectsException(exception)
 
     except requests.HTTPError as exception:
         logging.info(f"Status bad code: {response.status_code}. {exception}")
-        raise PLHTTPStatusError(exception)
+        raise PLHTTPStatusException(exception)
 
     return response

@@ -3,37 +3,37 @@
 import requests
 
 
-class PLPermissionError(PermissionError):
+class PLPermissionException(PermissionError):
     """Permission error."""
 
     pass
 
 
-class PLFileExistsError(FileExistsError):
+class PLFileExistsException(FileExistsError):
     """File not found error."""
 
     pass
 
 
-class PLHTTPStatusError(requests.HTTPError):
+class PLHTTPStatusException(requests.HTTPError):
     """Http status error."""
 
     pass
 
 
-class PLTooManyRedirectsError(requests.TooManyRedirects):
+class PLTooManyRedirectsException(requests.TooManyRedirects):
     """Too many redirects error."""
 
     pass
 
 
-class PLTimeoutError(requests.Timeout):
+class PLTimeoutException(requests.Timeout):
     """Timeout error."""
 
     pass
 
 
-class PLConnectionError(requests.ConnectionError):
+class PLConnectionException(requests.ConnectionError):
     """Connection error."""
 
     pass
