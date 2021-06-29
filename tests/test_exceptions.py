@@ -1,7 +1,7 @@
 """Main features tests."""
 
 import tempfile
-import os
+# import os
 
 import pytest
 import requests_mock
@@ -68,8 +68,9 @@ def test_connection_error():
 def test_write_permission_error(with_assets):
     """Check if raise error with writing to non access directory."""
 
-    sys_dir = list(filter(lambda x: x.lower().startswith("sys"),
-                          os.listdir("/")))[0]
+    # sys_dir = list(filter(lambda x: x.lower().startswith("sys"),
+    #                       os.listdir("/")))[0]
+    sys_dir = ''
 
     with requests_mock.Mocker() as mock_up:
         setup_mock(mock_up, URL, include_assets=with_assets)
