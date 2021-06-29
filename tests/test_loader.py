@@ -9,22 +9,34 @@ from urllib.parse import urljoin
 
 URL = "http://example.ru"
 RIGHT_HTML_DIR = "tests/fixtures/demo_page/out"
-FIXTURE_DIR = "tests/fixtures/demo_page/"
+FIXTURE_DIR = "tests/fixtures/demo_page"
 
 
 def _get_contents():
     """Get html, css, img, js test content."""
 
-    with open("tests/fixtures/demo_page/in/example.html", "r") as file:
+    with open(os.path.join(FIXTURE_DIR, "in/example.html"), "r") as file:
         html_text = file.read()
-    with open("tests/fixtures/demo_page/in/css/styles.css", "rb") as file:
-        css_content = file.read()
-    with open("tests/fixtures/demo_page/in/img/googlelogo.png", "rb") as file:
-        img_content = file.read()
-    with open("tests/fixtures/demo_page/in/js/scripts.js", "rb") as file:
-        js_content = file.read()
 
-    return html_text, css_content, img_content, js_content
+    with open(os.path.join(FIXTURE_DIR, "in/css/abs-styles.css"), "rb") as file:
+        abs_css_content = file.read()
+    with open(os.path.join(FIXTURE_DIR, "in/css/rel-styles.css"), "rb") as file:
+        rel_css_content = file.read()
+
+    with open(os.path.join(FIXTURE_DIR, "in/img/abs-googlelogo.png"), "rb") as file:
+        abs_img_content = file.read()
+    with open(os.path.join(FIXTURE_DIR, "in/img/rel-googlelogo.png"), "rb") as file:
+        rel_img_content = file.read()
+
+    with open(os.path.join(FIXTURE_DIR, "in/js/abs-scripts.js"), "rb") as file:
+        abs_js_content = file.read()
+    with open(os.path.join(FIXTURE_DIR, "in/js/rel-scripts.js"), "rb") as file:
+        rel_js_content = file.read()
+
+    return (html_text,
+            abs_css_content, rel_css_content,
+            abs_img_content, rel_img_content,
+            abs_js_content, rel_js_content)
 
 
 def _setup_mock(mock_up, url: str):
@@ -34,14 +46,19 @@ def _setup_mock(mock_up, url: str):
     """
 
     (html_text,
-     css_content,
-     img_content,
-     js_content) = _get_contents()
+     abs_css_content, rel_css_content,
+     abs_img_content, rel_img_content,
+     abs_js_content, rel_js_content) = _get_contents()
 
     mock_up.get(url, text=html_text)
-    mock_up.get(urljoin(url, "css/styles.css"), content=css_content)
-    mock_up.get(urljoin(url, "img/googlelogo.png"), content=img_content)
-    mock_up.get(urljoin(url, "js/scripts.js"), content=js_content)
+    mock_up.get(urljoin(url, "css/abs-styles.css"), content=abs_css_content)
+    mock_up.get(urljoin(url, "css/rel-styles.css"), content=rel_css_content)
+
+    mock_up.get(urljoin(url, "img/abs-googlelogo.png"), content=abs_img_content)
+    mock_up.get(urljoin(url, "img/rel-googlelogo.png"), content=rel_img_content)
+
+    mock_up.get(urljoin(url, "js/abs-scripts.js"), content=abs_js_content)
+    mock_up.get(urljoin(url, "js/rel-scripts.js"), content=rel_js_content)
 
 
 def _compare_files_content(result_path, right_path):

@@ -21,11 +21,11 @@ jobs:
           pip3 install poetry
           make install
 
-      - name: Lint
-        run: make lint
-
       - name: PyTests
         run: make test
+
+      - name: Lint
+        run: make lint
 
       - name: Upload coverage to Codecov
         uses: paambaati/codeclimate-action@v2.7.5
