@@ -1,6 +1,7 @@
 import os
 import tempfile
 
+import pytest
 from requests_mock import Mocker
 
 from page_loader.loader import download
@@ -8,94 +9,93 @@ from urllib.parse import urljoin
 
 
 URL = "http://example.ru"
-RIGHT_HTML_DIR = "tests/fixtures/demo_page/out"
-FIXTURE_DIR = "tests/fixtures/demo_page"
+ASSETS_PATHS = ("css/abs-styles.css",
+                "css/rel-styles.css",
+                "img/abs-googlelogo.png",
+                "img/rel-googlelogo.png",
+                "js/abs-scripts.js",
+                "js/rel-scripts.js", )
+EXPECTED_HTML_DIR = "tests/fixtures/demo_page/out"
+FIXTURE_DIR = "tests/fixtures/demo_page/in"
 
 
-def _get_contents():
-    """Get html, css, img, js test content."""
+@pytest.fixture
+def html():
+    """Get html fixture."""
 
-    with open(os.path.join(FIXTURE_DIR, "in/example.html"), "r") as file:
-        html_text = file.read()
-
-    with open(os.path.join(FIXTURE_DIR, "in/css/abs-styles.css"), "rb") as file:
-        abs_css_content = file.read()
-    with open(os.path.join(FIXTURE_DIR, "in/css/rel-styles.css"), "rb") as file:
-        rel_css_content = file.read()
-
-    with open(os.path.join(FIXTURE_DIR, "in/img/abs-googlelogo.png"), "rb") as file:
-        abs_img_content = file.read()
-    with open(os.path.join(FIXTURE_DIR, "in/img/rel-googlelogo.png"), "rb") as file:
-        rel_img_content = file.read()
-
-    with open(os.path.join(FIXTURE_DIR, "in/js/abs-scripts.js"), "rb") as file:
-        abs_js_content = file.read()
-    with open(os.path.join(FIXTURE_DIR, "in/js/rel-scripts.js"), "rb") as file:
-        rel_js_content = file.read()
-
-    return (html_text,
-            abs_css_content, rel_css_content,
-            abs_img_content, rel_img_content,
-            abs_js_content, rel_js_content)
+    data = {"url": URL}
+    with open(os.path.join(FIXTURE_DIR, "example.html"), "r") as file:
+        data["text"] = file.read()
+    return data
 
 
-def _setup_mock(mock_up, url: str):
+@pytest.fixture
+def assets():
+    """Get assets fixtures."""
+
+    data = []
+    for asset_path in ASSETS_PATHS:
+        element = {"url": asset_path}
+        with open(os.path.join(FIXTURE_DIR, asset_path), "rb") as file:
+            element["content"] = file.read()
+        data.append(element)
+    return data
+
+
+def _setup_mock(mock_up, html, assets):
     """Setup mock up for url.
     :param mock_up: mock object
-    :param url: url
+    :param html: html fixture
+    :param assets: assets fixtures
     """
 
-    (html_text,
-     abs_css_content, rel_css_content,
-     abs_img_content, rel_img_content,
-     abs_js_content, rel_js_content) = _get_contents()
+    url = html["url"]
+    mock_up.get(url, text=html["text"])
 
-    mock_up.get(url, text=html_text)
-    mock_up.get(urljoin(url, "css/abs-styles.css"), content=abs_css_content)
-    mock_up.get(urljoin(url, "css/rel-styles.css"), content=rel_css_content)
-
-    mock_up.get(urljoin(url, "img/abs-googlelogo.png"), content=abs_img_content)
-    mock_up.get(urljoin(url, "img/rel-googlelogo.png"), content=rel_img_content)
-
-    mock_up.get(urljoin(url, "js/abs-scripts.js"), content=abs_js_content)
-    mock_up.get(urljoin(url, "js/rel-scripts.js"), content=rel_js_content)
+    for asset in assets:
+        mock_up.get(urljoin(url, asset["url"]), content=asset["content"])
 
 
-def _compare_files_content(result_path, right_path):
+def _compare_files_content(result_path, expected_path):
+    """Compare two files with 'rb' flag."""
+
     with open(result_path, "rb") as file:
         result_content = file.read()
-    with open(right_path, "rb") as file:
-        right_content = file.read()
+    with open(expected_path, "rb") as file:
+        expected_content = file.read()
 
-    return result_content == right_content
+    return result_content == expected_content
 
 
-def test_download_page():
-    """Check main features of app."""
+def test_download_page(html, assets):
+    """Check main features of app.
+    :param html: html fixture
+    :param assets: assets fixtures
+    """
 
     with Mocker() as mock_up:
-        _setup_mock(mock_up, URL)
+        _setup_mock(mock_up, html, assets)
 
-        with tempfile.TemporaryDirectory(dir=FIXTURE_DIR) as temp_dir:
+        with tempfile.TemporaryDirectory() as temp_dir:
             result = download(URL, temp_dir)
 
             result_path, _ = os.path.split(result)
             result_tree = sorted(list(os.walk(result_path)))
-            right_tree = sorted(list(os.walk(RIGHT_HTML_DIR)))
+            expected_tree = sorted(list(os.walk(EXPECTED_HTML_DIR)))
 
-            for result_node, right_node in zip(result_tree, right_tree):
+            for result_node, expected_node in zip(result_tree, expected_tree):
                 result_dir_name, result_dirs, result_files = result_node
-                right_dir_name, right_dirs, right_files = right_node
+                expected_dir_name, expected_dirs, expected_files = expected_node
 
-                assert sorted(result_dirs) == sorted(right_dirs)
-                assert sorted(result_files) == sorted(right_files)
+                assert sorted(result_dirs) == sorted(expected_dirs)
+                assert sorted(result_files) == sorted(expected_files)
 
                 result_files = sorted(result_files)
-                right_files = sorted(right_files)
+                expected_files = sorted(expected_files)
 
-                for result_file, right_file in zip(result_files,
-                                                   right_files):
+                for result_file, expected_file in zip(result_files,
+                                                      expected_files):
                     assert _compare_files_content(
                         os.path.join(result_dir_name, result_file),
-                        os.path.join(right_dir_name, right_file)
+                        os.path.join(expected_dir_name, expected_file)
                     )
