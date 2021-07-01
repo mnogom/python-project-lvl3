@@ -1,39 +1,37 @@
 """Exceptions."""
 
-import requests
 
-
-class PLPermissionException(PermissionError):
+class PLPermissionException(Exception):
     """Permission error."""
 
     pass
 
 
-class PLFileExistsException(FileExistsError):
+class PLFileExistsException(Exception):
     """File not found error."""
 
     pass
 
 
-class PLHTTPStatusException(requests.HTTPError):
+class PLHTTPStatusException(Exception):
     """Http status error."""
 
     pass
 
 
-class PLTooManyRedirectsException(requests.TooManyRedirects):
+class PLTooManyRedirectsException(Exception):
     """Too many redirects error."""
 
     pass
 
 
-class PLTimeoutException(requests.Timeout):
+class PLTimeoutException(Exception):
     """Timeout error."""
 
     pass
 
 
-class PLConnectionException(requests.ConnectionError):
+class PLConnectionException(Exception):
     """Connection error."""
 
     pass

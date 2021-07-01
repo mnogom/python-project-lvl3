@@ -48,13 +48,13 @@ def save_file(filename: str, mode: str, data: any) -> str:
         with open(filename, mode) as file:
             file.write(data)
 
-    except PermissionError as exception:
-        logging.info(exception)
-        raise PLPermissionException(exception)
-
     except FileNotFoundError as exception:
         logging.info(exception)
         raise PLFileExistsException(exception)
+
+    except OSError as exception:
+        logging.info(exception)
+        raise PLPermissionException(exception)
 
     logging.info(f"File '{filename}' was saved with mode '{mode}'")
     return filename

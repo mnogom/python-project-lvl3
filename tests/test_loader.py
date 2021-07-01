@@ -8,7 +8,7 @@ from page_loader.loader import download
 from urllib.parse import urljoin
 
 
-URL = "http://example.ru"
+URL = "https://example.ru"
 ASSETS_PATHS = ("css/abs-styles.css",
                 "css/rel-styles.css",
                 "img/abs-googlelogo.png",
@@ -69,6 +69,7 @@ def _compare_files_content(result_path, expected_path):
 
 def test_download_page(html, assets):
     """Check main features of app.
+
     :param html: html fixture
     :param assets: assets fixtures
     """
