@@ -2,7 +2,6 @@ import os
 import tempfile
 
 import pytest
-from requests_mock import Mocker
 
 from page_loader.loader import download
 from urllib.parse import urljoin
@@ -16,6 +15,8 @@ ASSETS_PATHS = ("css/abs-styles.css",
                 "js/abs-scripts.js",
                 "js/rel-scripts.js", )
 EXPECTED_HTML_DIR = "tests/fixtures/demo_page/out"
+EXPECTED_FILENAME = "example-ru.html"
+EXPECTED_ASSETS_DIR = "example-ru_files"
 FIXTURE_DIR = "tests/fixtures/demo_page/in"
 
 
@@ -42,18 +43,18 @@ def assets():
     return data
 
 
-def _setup_mock(mock_up, html, assets):
+def _setup_mock(requests_mock, html, assets):
     """Setup mock up for url.
-    :param mock_up: mock object
+    :param requests_mock: mock object
     :param html: html fixture
     :param assets: assets fixtures
     """
 
     url = html["url"]
-    mock_up.get(url, text=html["text"])
+    requests_mock.get(url, text=html["text"])
 
     for asset in assets:
-        mock_up.get(urljoin(url, asset["url"]), content=asset["content"])
+        requests_mock.get(urljoin(url, asset["url"]), content=asset["content"])
 
 
 def _compare_files_content(result_path, expected_path):
@@ -67,36 +68,52 @@ def _compare_files_content(result_path, expected_path):
     return result_content == expected_content
 
 
-def test_download_page(html, assets):
+def test_download_page(requests_mock, html, assets):
     """Check main features of app.
 
     :param html: html fixture
     :param assets: assets fixtures
     """
 
-    with Mocker() as mock_up:
-        _setup_mock(mock_up, html, assets)
+    _setup_mock(requests_mock, html, assets)
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            result = download(URL, temp_dir)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        result = download(URL, temp_dir)
 
-            result_path, _ = os.path.split(result)
-            result_tree = sorted(list(os.walk(result_path)))
-            expected_tree = sorted(list(os.walk(EXPECTED_HTML_DIR)))
+        # Check if path is correct and if page name is correctly generated
+        result_filepath, result_filename = os.path.split(result)
+        assert result_filepath == temp_dir
+        assert result_filename == EXPECTED_FILENAME
 
-            for result_node, expected_node in zip(result_tree, expected_tree):
-                result_dir_name, result_dirs, result_files = result_node
-                expected_dir_name, expected_dirs, expected_files = expected_node
+        # Check if HTML content is similar
+        assert _compare_files_content(result, os.path.join(EXPECTED_HTML_DIR,
+                                                           EXPECTED_FILENAME))
 
-                assert sorted(result_dirs) == sorted(expected_dirs)
-                assert sorted(result_files) == sorted(expected_files)
+        # Check assets
+        result_assets_dir = os.path.join(temp_dir,
+                                         EXPECTED_ASSETS_DIR)
+        expected_assets_dir = os.path.join(EXPECTED_HTML_DIR,
+                                           EXPECTED_ASSETS_DIR)
 
-                result_files = sorted(result_files)
-                expected_files = sorted(expected_files)
+        # Check if assets directory exists
+        assert os.path.isdir(result_assets_dir)
 
-                for result_file, expected_file in zip(result_files,
-                                                      expected_files):
-                    assert _compare_files_content(
-                        os.path.join(result_dir_name, result_file),
-                        os.path.join(expected_dir_name, expected_file)
-                    )
+        # Check if count of result and expected assets are similar
+        result_assets = sorted(os.listdir(result_assets_dir))
+        expected_assets = sorted(os.listdir(expected_assets_dir))
+        assert len(result_assets) == len(expected_assets)
+
+        # Check if name and content of result and expected assets are similar
+        for result_asset_name, expected_asset_name in zip(result_assets,
+                                                          expected_assets):
+
+            assert result_asset_name == expected_asset_name
+
+            result_asset_path = os.path.join(temp_dir,
+                                             EXPECTED_ASSETS_DIR,
+                                             result_asset_name)
+            expected_asset_path = os.path.join(EXPECTED_HTML_DIR,
+                                               EXPECTED_ASSETS_DIR,
+                                               expected_asset_name)
+            assert _compare_files_content(result_asset_path,
+                                          expected_asset_path)

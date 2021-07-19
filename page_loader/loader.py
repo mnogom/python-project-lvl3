@@ -20,15 +20,14 @@ def _generate_name(url: str, is_dir=False) -> str:
     :return: local name for url
     """
 
-    # TODO: #1.1 if downloaded page ends with '/' then extension will be html
-    if url.endswith("/"):
-        url_name, ext = url[:-1], None
-    else:
-        url_name, ext = os.path.splitext(url)
+    url = url[:-1] if url.endswith("/") else url
+    parsed_url = urlparse(url)
+
+    path, ext = os.path.splitext(parsed_url.path)
     ext = ext if ext else ".html"
 
-    scheme = f"{urlparse(url_name).scheme}://"
-    filename = url_name.replace(scheme, '', 1)
+    filename = f"{parsed_url.netloc}{path}"
+    filename += f"?{parsed_url.query}" if parsed_url.query else ""
     filename = re.sub(r"\W", "-", filename)
 
     if is_dir:
@@ -43,19 +42,16 @@ def _generate_name(url: str, is_dir=False) -> str:
     return full_filename
 
 
-def _is_local_asset(page_url: str, item_url: str) -> bool:
+def _is_local_asset(page_url: str, full_item_url: str) -> bool:
     """Check if asset is local.
 
-    :param item_url: reference url
+    :param full_item_url: full asset url
     :param page_url: page url
     :return: True/False
     """
 
-    if not item_url:
-        return False
-
     page_url_netloc = urlparse(page_url).netloc
-    item_url_netloc = urlparse(urljoin(page_url, item_url)).netloc
+    item_url_netloc = urlparse(full_item_url).netloc
 
     return page_url_netloc == item_url_netloc
 
@@ -84,22 +80,24 @@ def _switch_assets(soup, page_url: str, asset_rel_dir: str) -> list:
         for item in asset_items:
             logging.info(f"Analyze '{attr}' in '{tag}'")
 
-            item_url = item.get(attr)
+            asset_url = item.get(attr)
 
-            if _is_local_asset(page_url, item_url):
-                item_url = urljoin(page_url, item_url)
-                filename = _generate_name(item_url)
+            if asset_url:
+                full_asset_url = urljoin(page_url, asset_url)
 
-                rel_filepath = os.path.join(asset_rel_dir, filename)
+                if _is_local_asset(page_url, full_asset_url):
+                    filename = _generate_name(full_asset_url)
 
-                item[attr] = rel_filepath
-                assets_to_download.append({
-                    "url": item_url,
-                    "filename": filename
-                })
+                    rel_filepath = os.path.join(asset_rel_dir, filename)
 
-                logging.info(f"Switch asset reference "
-                             f"'{item[attr]}'")
+                    item[attr] = rel_filepath
+                    assets_to_download.append({
+                        "url": full_asset_url,
+                        "filename": filename
+                    })
+
+                    logging.info(f"Switch asset reference "
+                                 f"'{item[attr]}'")
 
     logging.info("End of analyzing page assets")
     return assets_to_download
@@ -133,13 +131,10 @@ def download(url: str, path=os.getcwd()) -> str:
     :return: path to downloaded page
     """
 
-    # TODO: #1.2 url must ends with '/'
-    full_url = url if url.endswith("/") else url + "/"
-
     response = make_request(url)
 
-    page_name = _generate_name(full_url)
-    asset_rel_dir = _generate_name(full_url, is_dir=True)
+    page_name = _generate_name(url)
+    asset_rel_dir = _generate_name(url, is_dir=True)
     asset_abs_dir = os.path.join(path, asset_rel_dir)
 
     soup = BeautifulSoup(response.text, features="html.parser")
