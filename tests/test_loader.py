@@ -6,20 +6,29 @@ import pytest
 from page_loader.loader import download
 from urllib.parse import urljoin
 
+URL = "https://example.ru/subpage/"
+ASSETS_INFO = ({"path": "css/rel-styles.css",
+                "url": "css/rel-styles.css"},
+               {"path": "css/abs-styles.css",
+                "url": "/css/abs-styles.css"},
+               {"path": "css/full-styles.css",
+                "url": "https://example.ru/css/full-styles.css"},
+               {"path": "img/rel-googlelogo.png",
+                "url": "img/rel-googlelogo.png"},
+               {"path": "img/abs-googlelogo.png",
+                "url": "/img/abs-googlelogo.png"},
+               {"path": "img/full-googlelogo.png",
+                "url": "https://example.ru/img/full-googlelogo.png"},
+               {"path": "js/rel-scripts.js",
+                "url": "js/rel-scripts.js"},
+               {"path": "js/abs-scripts.js",
+                "url": "/js/abs-scripts.js"},
+               {"path": "js/full-scripts.js",
+                "url": "https://example.ru/js/full-scripts.js"},)
 
-URL = "https://example.ru/page_1"
-ASSETS_PATHS = ("css/full-styles.css",
-                "css/rel-styles.css",
-                "css/abs-styles.css",
-                "img/full-googlelogo.png",
-                "img/rel-googlelogo.png",
-                "img/abs-googlelogo.png",
-                "js/full-scripts.js",
-                "js/rel-scripts.js",
-                "js/abs-scripts.js", )
 EXPECTED_HTML_DIR = "tests/fixtures/demo_page/out"
-EXPECTED_FILENAME = "example-ru-page_1.html"
-EXPECTED_ASSETS_DIR = "example-ru-page_1_files"
+EXPECTED_FILENAME = "example-ru-subpage.html"
+EXPECTED_ASSETS_DIR = "example-ru-subpage_files"
 FIXTURE_DIR = "tests/fixtures/demo_page/in"
 
 
@@ -38,9 +47,9 @@ def assets():
     """Get assets fixtures."""
 
     data = []
-    for asset_path in ASSETS_PATHS:
-        element = {"url": asset_path}
-        with open(os.path.join(FIXTURE_DIR, asset_path), "rb") as file:
+    for asset in ASSETS_INFO:
+        element = {"url": urljoin(URL, asset["url"])}
+        with open(os.path.join(FIXTURE_DIR, asset["path"]), "rb") as file:
             element["content"] = file.read()
         data.append(element)
     return data
@@ -57,7 +66,7 @@ def _setup_mock(requests_mock, html, assets):
     requests_mock.get(url, text=html["text"])
 
     for asset in assets:
-        requests_mock.get(urljoin(url, asset["url"]), content=asset["content"])
+        requests_mock.get(asset["url"], content=asset["content"])
 
 
 def _compare_files_content(result_path, expected_path):
@@ -109,7 +118,6 @@ def test_download_page(requests_mock, html, assets):
         # Check if name and content of result and expected assets are similar
         for result_asset_name, expected_asset_name in zip(result_assets,
                                                           expected_assets):
-
             assert result_asset_name == expected_asset_name
 
             result_asset_path = os.path.join(temp_dir,
