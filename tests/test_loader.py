@@ -7,16 +7,19 @@ from page_loader.loader import download
 from urllib.parse import urljoin
 
 
-URL = "https://example.ru"
-ASSETS_PATHS = ("css/abs-styles.css",
+URL = "https://example.ru/page_1"
+ASSETS_PATHS = ("css/full-styles.css",
                 "css/rel-styles.css",
-                "img/abs-googlelogo.png",
+                "css/abs-styles.css",
+                "img/full-googlelogo.png",
                 "img/rel-googlelogo.png",
-                "js/abs-scripts.js",
-                "js/rel-scripts.js", )
+                "img/abs-googlelogo.png",
+                "js/full-scripts.js",
+                "js/rel-scripts.js",
+                "js/abs-scripts.js", )
 EXPECTED_HTML_DIR = "tests/fixtures/demo_page/out"
-EXPECTED_FILENAME = "example-ru.html"
-EXPECTED_ASSETS_DIR = "example-ru_files"
+EXPECTED_FILENAME = "example-ru-page_1.html"
+EXPECTED_ASSETS_DIR = "example-ru-page_1_files"
 FIXTURE_DIR = "tests/fixtures/demo_page/in"
 
 
