@@ -6,7 +6,7 @@ import pytest
 from page_loader.loader import download
 from urllib.parse import urljoin
 
-URL = "https://example.ru/subpage/"
+URL = "https://example.ru/subpage"
 ASSETS_INFO = ({"path": "css/rel-styles.css",
                 "url": "css/rel-styles.css"},
                {"path": "css/abs-styles.css",
@@ -48,7 +48,7 @@ def assets():
 
     data = []
     for asset in ASSETS_INFO:
-        element = {"url": urljoin(URL, asset["url"])}
+        element = {"url": urljoin(URL + "/", asset["url"])}
         with open(os.path.join(FIXTURE_DIR, asset["path"]), "rb") as file:
             element["content"] = file.read()
         data.append(element)

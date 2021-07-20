@@ -24,6 +24,7 @@ def _generate_name(url: str, is_dir=False) -> str:
     parsed_url = urlparse(url)
 
     path, ext = os.path.splitext(parsed_url.path)
+    path = path if path != "/" else ""
     ext = ext if ext else ".html"
 
     filename = f"{parsed_url.netloc}{path}"
@@ -66,6 +67,8 @@ def _switch_assets(soup, page_url: str, asset_rel_dir: str) -> list:
     """
 
     logging.info("Starting analyzing page assets")
+
+    page_url += "/"
 
     assets_types = {
         "img": "src",
