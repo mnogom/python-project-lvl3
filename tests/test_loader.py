@@ -57,6 +57,7 @@ def assets():
 
 def _setup_mock(requests_mock, html, assets):
     """Setup mock up for url.
+
     :param requests_mock: mock object
     :param html: html fixture
     :param assets: assets fixtures
